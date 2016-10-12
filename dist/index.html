@@ -118,7 +118,7 @@ const app = new Vue({
         <td>{{ incident.datetime }}</td>
         <td>{{ incident.type }}</td>
         <td class="nopadding width100">
-            <img :src="incident.assessor_image_url" />
+            <img :src="incident.assessor_image_url" style="width:100px" />
             <img :src="incident.streetview_url" />
         <td><a href="https://www.google.com/maps/dir//{{ incident.address }}">{{ incident.address }}</a> (<a href="http://blue.kingcounty.com/Assessor/eRealProperty/Dashboard.aspx?ParcelNbr={{ incident.assessor_id }}">Assessor data</a>)<br/>{{ incident.place_name }}</td>
         <td>

@@ -78,7 +78,7 @@ def get_todays_dispatches():
                 incident["assessor_id"] = items[0].get('PIN', None) if items else None
                 url_beginning = 'http://blue.kingcounty.com/Assessor/eRealProperty/Dashboard.aspx?ParcelNbr='
                 url = '%s%s' % (url_beginning, assessor_id)
-                assessor_html = requests.get(url).text()
+                assessor_html = requests.get(url).text
                 html_id = 'kingcounty_gov_cphContent_FormViewPictCurr_CurrentImage'
                 image_url_beginning = 'http://blue.kingcounty.com/Assessor/eRealProperty/'
                 assessor_soup = BeautifulSoup(assessor_html, 'lxml')

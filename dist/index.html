@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+      <title>RevealSeattle: A Public Newsroom</title>
+      <script>
+          function uniq(a) {
+                var seen = {};
+                return a.filter(function(item) {
+                    return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+                });
+            }
+          var a = ['','one ','two ','three ','four ', 'five ','six ','seven ','eight ','nine ','ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ','seventeen ','eighteen ','nineteen '];
+var b = ['', '', 'twenty','thirty','forty','fifty', 'sixty','seventy','eighty','ninety'];
+
+function inWords (num) {
+    if ((num = num.toString()).length > 9) return 'overflow';
+    n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!n) return; var str = '';
+    str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'crore ' : '';
+    str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'lakh ' : '';
+    str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'thousand ' : '';
+    str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'hundred ' : '';
+    str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
+    return str;
+}
+      </script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+      <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+      <script src="https://npmcdn.com/vue/dist/vue.js"></script>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css" integrity="sha384-2hfp1SzUoho7/TsGGGDaFdsuuDL0LX2hnUp6VkX3CUQ2K4K+xjboZdsXyp4oUHZj" crossorigin="anonymous">
+      <link rel="stylesheet" href="/css/main.css" crossorigin="anonymous">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/js/bootstrap.min.js" integrity="sha384-VjEeINv9OSwtWFLAtmc4JCtEJXXBub00gtSnszmspDLCtC0I4z4nqz7rEFbIZLLU" crossorigin="anonymous"></script>
+    <script src="/horizon/horizon.js"></script>
+    <script>
+        $(function() {
+            Vue.filter('inWords', function (value) {
+  return inWords(value)
+})
+const app = new Vue({
+  el: '#app',
+  data: {
+    // Our dynamic list of incidents
+    incidents: [],
+    show_address_history: {}
+  },
+    methods: {
+    toggle_address_history: function (incident_id) {
+      newd = {};
+      newd[incident_id] = !this.show_address_history[incident_id];
+        app.$set('show_address_history', Object.assign({}, this.show_address_history, newd));
+        console.log(JSON.stringify(this.show_address_history));
+    }
+  },
+    computed: {
+    // a computed getter
+    past_calls: function () {
+        d = {}
+        $.each(this.incidents, function(i, row) {
+            d[row['incident_id']] = row['address_history'];
+        });
+      return d
+    }
+  },
+  created() {
+    // Subscribe to messages
+    var horizon = Horizon();
+      const dispatch_log = horizon("dispatch_log");
+      dispatch_log.findAll({"is_active": true}).order('datetime', 'descending').limit(10).watch()
+    .subscribe(allMessages => {
+        // Make a copy of the array and reverse it, so newest images push into
+        // the messages feed from the bottom of the rendered list. (Otherwise
+        // they appear initially at the top and move down)
+        this.incidents = [...allMessages]
+      },
+      // When error occurs on server
+      error => console.log(error)
+    )
+
+    // Triggers when client successfully connects to server
+    horizon.onReady().subscribe(
+      () => console.log("Connected to Horizon server")
+    )
+
+    // Triggers when disconnected from server
+    horizon.onDisconnected().subscribe(
+      () => console.log("Disconnected from Horizon server")
+    )
+  }
+})
+
+});
+    </script>
+      <style>
+          body {font-size:.8em}
+          td, th { border:1px solid #000; padding:5px; vertical-align:top;}
+          td.nopadding {padding:0;background:#000;}
+          td.width100 {width:100px}
+      </style>
+  </head>
+  <body>
+      <div id="main" class="container">
+      <h1>RevealSeattle: A Public Newsroom</h1>
+          <div id="app">
+  <table v-if="incidents.length > 0">
+      <tr>
+          <th>Incident #</th>
+          <th>Datetime</th>
+          <th>Initial call type</th>
+          <th class="width100">Google Streetview</th>
+          <th>Address and place name(s)</th>
+          <th>Individual unit dispatches</th>
+      </tr>
+    <template v-for="incident in incidents">
+        <tr>
+            <td><a href="http://www2.seattle.gov/fire/IncidentSearch/incidentDetail.asp?ID={{ incident.incident_id }}">{{ incident.incident_id }}</a></td>
+        <td>{{ incident.datetime }}</td>
+        <td>{{ incident.type }}</td>
+        <td class="nopadding width100"><img :src="incident.streetview_url" />
+        <td><a href="https://www.google.com/maps/dir//{{ incident.address }}">{{ incident.address }}</a> (<a href="http://blue.kingcounty.com/Assessor/eRealProperty/Dashboard.aspx?ParcelNbr={{ incident.assessor_id }}">Assessor data</a>)<br/>{{ incident.place_name }}</td>
+        <td>
+            {{ incident.number_of_units_dispatched | inWords | capitalize }} {{ incident.number_of_units_dispatched | pluralize 'unit' }} {{ incident.number_of_units_dispatched == 1 ? 'was' : 'were' }} dispatched. <span v-if="incident.number_of_units_in_service > 0">{{ incident.number_of_units_in_service | inWords | capitalize }} {{ incident.number_of_units_in_service | pluralize 'unit' }} {{ incident.number_of_units_in_service == 1 ? 'is' : 'are' }} back in service.</span>
+            <table>
+                <tr>
+                    <th>Unit</th>
+                    <th>Dispatched</th>
+                    <th>Arrived</th>
+                    <th>In-service</th>
+                </tr>
+                <tr v-for="unit_info in incident.unit_timestamps">
+                    <td>{{ unit_info.unit }}</td>
+                    <td>{{ unit_info.dispatched }}</td>
+                    <td>{{ unit_info.arrived }}</td>
+                    <td>{{ unit_info.in_service }}</td>
+                </tr>
+            </table>
+        </td>
+        </tr>
+      <tr>
+                        <td colspan="6">{{ incident.address_history.length }} previous {{ incident.address_history.length | pluralize 'call' }} found <span v-if="incident.address_history.length > 0"><input type="button" value="{{ show_address_history[incident.incident_id] ? 'Hide' : 'Show' }}" v-on:click="toggle_address_history(incident.incident_id)" /></span></td>
+                    </tr>
+        <tr v-if="show_address_history[incident.incident_id]"><td colspan="6">
+            <table>
+                <tr v-for="past_call in past_calls[incident.incident_id]">
+                    <td>{{ past_call.incident_number }}</td>
+                    <td>{{ past_call.datetime }}</td>
+                    <td>{{ past_call.type }}</td>
+                </tr>
+            </table>
+            </td></tr>
+    </template>
+    
+  </table>
+              <span v-else>We know of no active fire department incidents at this time.</span>
+</div>
+      </div>
+  </body>
+</html>

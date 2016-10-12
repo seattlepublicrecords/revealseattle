@@ -71,10 +71,20 @@ def get_todays_dispatches():
             assessor_id = addresses_to_assessor_ids.get(address)
             if assessor_id:
                 incident["assessor_id"] = assessor_id
+                incident["assessor_image_url"] = existing_data_for_row.get('assessor_image_url')
             else:
                 url = 'http://gismaps.kingcounty.gov/parcelviewer2/addSearchHandler.ashx?add='+address
                 items = requests.get(url).json()['items']
                 incident["assessor_id"] = items[0].get('PIN', None) if items else None
+                url_beginning = 'http://blue.kingcounty.com/Assessor/eRealProperty/Dashboard.aspx?ParcelNbr='
+                url = '%s%s' % (url_beginning, assessor_id)
+                assessor_html = requests.get(url).text()
+                html_id = 'kingcounty_gov_cphContent_FormViewPictCurr_CurrentImage'
+                image_url_beginning = 'http://blue.kingcounty.com/Assessor/eRealProperty/'
+                assessor_soup = BeautifulSoup(assessor_html, 'lxml')
+                image_url_end = soup.find(html_id)['src']
+                image_url = '%s%s' % (image_url_beginning, image_url_end)
+                incident["assessor_image_url"] = image_url
             address_history = existing_data_for_row.get('address_history')
             if address_history:
                 incident["address_history"] = address_history

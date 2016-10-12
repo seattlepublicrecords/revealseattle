@@ -117,7 +117,9 @@ const app = new Vue({
             <td><a href="http://www2.seattle.gov/fire/IncidentSearch/incidentDetail.asp?ID={{ incident.incident_id }}">{{ incident.incident_id }}</a></td>
         <td>{{ incident.datetime }}</td>
         <td>{{ incident.type }}</td>
-        <td class="nopadding width100"><img :src="incident.streetview_url" />
+        <td class="nopadding width100">
+            <img :src="incident.assessor_image_url" />
+            <img :src="incident.streetview_url" />
         <td><a href="https://www.google.com/maps/dir//{{ incident.address }}">{{ incident.address }}</a> (<a href="http://blue.kingcounty.com/Assessor/eRealProperty/Dashboard.aspx?ParcelNbr={{ incident.assessor_id }}">Assessor data</a>)<br/>{{ incident.place_name }}</td>
         <td>
             {{ incident.number_of_units_dispatched | inWords | capitalize }} {{ incident.number_of_units_dispatched | pluralize 'unit' }} {{ incident.number_of_units_dispatched == 1 ? 'was' : 'were' }} dispatched. <span v-if="incident.number_of_units_in_service > 0">{{ incident.number_of_units_in_service | inWords | capitalize }} {{ incident.number_of_units_in_service | pluralize 'unit' }} {{ incident.number_of_units_in_service == 1 ? 'is' : 'are' }} back in service.</span>

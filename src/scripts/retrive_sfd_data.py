@@ -82,7 +82,7 @@ def get_todays_dispatches():
                 html_id = 'kingcounty_gov_cphContent_FormViewPictCurr_CurrentImage'
                 image_url_beginning = 'http://blue.kingcounty.com/Assessor/eRealProperty/'
                 assessor_soup = BeautifulSoup(assessor_html, 'lxml')
-                image_url_end = soup.find(html_id)['src']
+                image_url_end = assessor_soup.find(html_id)['src']
                 image_url = '%s%s' % (image_url_beginning, image_url_end)
                 incident["assessor_image_url"] = image_url
             address_history = existing_data_for_row.get('address_history')

@@ -79,6 +79,7 @@ def get_todays_dispatches():
                 url_beginning = 'http://blue.kingcounty.com/Assessor/eRealProperty/Dashboard.aspx?ParcelNbr='
                 url = '%s%s' % (url_beginning, assessor_id)
                 assessor_html = requests.get(url).text
+                print assessor_html
                 html_id = 'kingcounty_gov_cphContent_FormViewPictCurr_CurrentImage'
                 image_url_beginning = 'http://blue.kingcounty.com/Assessor/eRealProperty/'
                 assessor_soup = BeautifulSoup(assessor_html, 'lxml')

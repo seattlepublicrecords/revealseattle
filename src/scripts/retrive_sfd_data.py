@@ -77,16 +77,18 @@ def get_todays_dispatches():
                 items = requests.get(url).json()['items']
                 incident["assessor_id"] = items[0].get('PIN', None) if items else None
                 url_beginning = 'http://blue.kingcounty.com/Assessor/eRealProperty/Dashboard.aspx?ParcelNbr='
-                
-                url = '%s%s' % (url_beginning, incident["assessor_id"])
-                print 'ASSESSOR url', url
-                assessor_html = requests.get(url).text
-                #print assessor_html
-                html_id = 'kingcounty_gov_cphContent_FormViewPictCurr_CurrentImage'
-                image_url_beginning = 'http://blue.kingcounty.com/Assessor/eRealProperty/'
-                assessor_soup = BeautifulSoup(assessor_html, 'lxml')
-                image_url_end = assessor_soup.find(id=html_id)['src']
-                image_url = '%s%s' % (image_url_beginning, image_url_end)
+                if incident["assessor_id"]:
+                    url = '%s%s' % (url_beginning, incident["assessor_id"])
+                    print 'ASSESSOR url', url
+                    assessor_html = requests.get(url).text
+                    #print assessor_html
+                    html_id = 'kingcounty_gov_cphContent_FormViewPictCurr_CurrentImage'
+                    image_url_beginning = 'http://blue.kingcounty.com/Assessor/eRealProperty/'
+                    assessor_soup = BeautifulSoup(assessor_html, 'lxml')
+                    image_url_end = assessor_soup.find(id=html_id)['src']
+                    image_url = '%s%s' % (image_url_beginning, image_url_end)
+                else:
+                    image_url = ''
                 incident["assessor_image_url"] = image_url
             address_history = existing_data_for_row.get('address_history')
             if address_history:
